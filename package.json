@@ -1,0 +1,45 @@
+{
+    "name": "plant-box-server",
+    "version": "0.0.1",
+    "description": "Node.js application for PlantBox (server)",
+    "main": "index.js",
+    "scripts": {
+        "prestart:dev": "npm run lint",
+        "start:dev": "nodemon -r esm index.js",
+        "start": "node -r esm index.js",
+        "lint": "esw",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@sentry/node": "^6.2.1",
+        "@sentry/tracing": "^6.2.1",
+        "config": "^3.3.4",
+        "esm": "^3.2.25",
+        "express": "^4.17.1",
+        "firebase": "^7.15.4",
+        "upcast": "^4.0.0",
+        "ws": "^7.4.0"
+    },
+    "engines": {
+        "node": "13.6.0"
+    },
+    "repository": {
+        "url": "https://glitch.com/edit/#!/hello-sqlite"
+    },
+    "author": "Krzysztof Szymkiewicz",
+    "license": "MIT",
+    "keywords": [
+        "node",
+        "express"
+    ],
+    "devDependencies": {
+        "eslint": "^7.21.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-config-prettier": "^8.1.0",
+        "eslint-plugin-import": "^2.22.1",
+        "eslint-plugin-prettier": "^3.3.1",
+        "eslint-watch": "^7.0.0",
+        "nodemon": "^2.0.7",
+        "prettier": "^2.2.1"
+    }
+}
