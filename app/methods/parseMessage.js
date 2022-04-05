@@ -1,51 +1,57 @@
 import upcast from 'upcast';
 
-const SENSOR_DATA_TYPE = {
-    Boolean: 'Boolean',
-    String: 'String',
-    Float: 'Float',
-    Int: 'Int',
+const computeFormat = (format) => {
+    if (format.includes('RANGE')) {
+        const [min, max] = format.split('(')[1].split(')')[0].split('-'); // RANGE(0-4095)
+        return {
+            kind: 'range',
+            format: 'number',
+            min: parseInt(min, 10),
+            max: parseInt(max, 10),
+        };
+    }
+    switch (format) {
+        case 'BUTTON':
+            return {
+                kind: 'button',
+                format: 'boolean',
+            };
+        case 'CELSIUS':
+            return {
+                kind: 'temperature',
+                valueSuffix: '°C',
+                format: 'number',
+            };
+        case 'PERCENT':
+            return {
+                kind: 'percent',
+                valueSuffix: '%',
+                format: 'number',
+            };
+        default:
+            return {
+                format: 'string',
+            };
+    }
 };
 
-const SENSOR_DATA_FORMAT = {
-    Percent: 'Percent',
-    Celsius: 'Celsius',
-    Default: 'Default',
-};
-
-const SENSOR_DATA_TYPE_MAP = {
-    [SENSOR_DATA_TYPE.Boolean]: (val) => upcast.to(val, 'boolean'),
-    [SENSOR_DATA_TYPE.String]: (val) => upcast.to(val, 'string'),
-    [SENSOR_DATA_TYPE.Float]: (val) => upcast.to(val, 'number'),
-    [SENSOR_DATA_TYPE.Int]: (val) => upcast.to(val, 'number'),
-};
-
-const SENSOR_DATA_FORMAT_MAP = {
-    [SENSOR_DATA_FORMAT.Percent]: '%',
-    [SENSOR_DATA_FORMAT.Celsius]: '°C',
-    [SENSOR_DATA_FORMAT.Default]: null,
-};
-
-const formatValue = (value, type = SENSOR_DATA_TYPE.String) => {
-    if (!value) return null;
-    return SENSOR_DATA_TYPE_MAP[type](value);
-};
+const computeValue = (info, value) => upcast.to(value, info.format);
 
 export default function parseMessage(message) {
-    // Example: REGISTER_OUTPUT/led_green:Boolean/false
-    const [action = null, peripheralInfo = '', peripheralDataValue = null] = message.split('/');
-    const [
-        peripheralName = null,
-        peripheralDataType = null,
-        peripheralDataFormat = SENSOR_DATA_FORMAT.Default,
-        peripheralCalibration = false,
-    ] = peripheralInfo.split(':');
+    // Example:
+    // REGISTER_INPUT/water_pump:SWITCH/false
+    // REGISTER_OUTPUT/soil_moisture:RANGE(0-4095)/3521
+    const [action = null, peripheralDetails = '', peripheralValue = null] = message.split('/');
+    const [name = null, format = null] = peripheralDetails.split(':');
+
+    const info = computeFormat(format);
+    const value = computeValue(info, peripheralValue);
     return {
         action,
-        peripheralName,
-        peripheralDataType,
-        peripheralCalibration,
-        peripheralDataFormat: SENSOR_DATA_FORMAT_MAP[peripheralDataFormat],
-        peripheralDataValue: formatValue(peripheralDataValue, peripheralDataType),
+        peripheral: {
+            name,
+            info,
+            value,
+        },
     };
 }

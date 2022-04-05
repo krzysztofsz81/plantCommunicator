@@ -1,7 +1,8 @@
 import config from 'config';
-import * as firebase from 'firebase';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
 
-firebase.initializeApp({
+const app = initializeApp({
     messagingSenderId: config.Firebase.MessagingSenderId,
     measurementId: config.Firebase.MeasurementId,
     storageBucket: config.Firebase.StorageBucket,
@@ -12,4 +13,7 @@ firebase.initializeApp({
     appId: config.Firebase.AppId,
 });
 
-export default firebase;
+const auth = getAuth();
+signInWithEmailAndPassword(auth, config.FirebaseAuth.Email, config.FirebaseAuth.Password);
+
+export default { app, auth };

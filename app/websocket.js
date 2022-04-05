@@ -72,32 +72,19 @@ async function initWebSocketServer(server) {
         });
 
         socket.on('message', async (message) => {
-            const { action, ...data } = parseMessage(message);
-            console.log(`[WS] socket -> message | ${message}`, { action, data });
-            if (!data) {
+            const { action, peripheral } = parseMessage(message);
+            console.log(`[WS] socket -> message | ${message}`);
+            if (!peripheral) {
                 console.error('[WS] Cannot parse message from socket', message);
                 return;
             }
 
             switch (action) {
                 case 'REGISTER_INPUT': {
-                    const {
-                        peripheralName,
-                        peripheralDataType,
-                        peripheralDataValue,
-                        peripheralDataFormat,
-                        peripheralCalibration,
-                    } = data;
                     try {
-                        await api.registerInput(deviceId, {
-                            peripheralName,
-                            peripheralDataType,
-                            peripheralDataValue,
-                            peripheralDataFormat,
-                            peripheralCalibration,
-                        });
-                        api.listenPeripheralData(deviceId, { peripheralName }, (snapshot) => {
-                            socket.send(`SET_PERIPHAL_DATA/${peripheralName}/${snapshot.val()}`);
+                        await api.registerInput(deviceId, peripheral);
+                        api.listenPeripheralData(deviceId, peripheral.name, (snapshot) => {
+                            socket.send(`SET_PERIPHAL_DATA/${peripheral.name}/${snapshot.val()}`);
                         });
                     } catch (err) {
                         trackError(err);
@@ -105,25 +92,11 @@ async function initWebSocketServer(server) {
                     break;
                 }
                 case 'REGISTER_OUTPUT': {
-                    const {
-                        peripheralName,
-                        peripheralDataValue,
-                        peripheralDataType,
-                        peripheralDataFormat,
-                        peripheralCalibration,
-                    } = data;
-                    api.registerOutput(deviceId, {
-                        peripheralName,
-                        peripheralDataType,
-                        peripheralDataValue,
-                        peripheralDataFormat,
-                        peripheralCalibration,
-                    });
+                    api.registerOutput(deviceId, peripheral);
                     break;
                 }
                 case 'UPDATE': {
-                    const { peripheralName, peripheralDataValue } = data;
-                    api.update(deviceId, { peripheralName, peripheralDataValue });
+                    api.update(deviceId, peripheral);
                     break;
                 }
                 default:

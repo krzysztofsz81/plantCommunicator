@@ -1,14 +1,14 @@
 import express from 'express';
-import firebase from './firebase';
+import { getDatabase, ref, get, set } from 'firebase/database';
 import { trackError } from './errorReporting';
-import { ITEM_TYPE } from './api';
+import { PERIPHERAL_TYPE } from './api';
 
 const router = express.Router();
 
 router.get('/devices', async (req, res) => {
     let snapshot;
     try {
-        snapshot = await firebase.database().ref('/devices').once('value');
+        snapshot = await get(ref(getDatabase(), '/devices'));
     } catch (err) {
         trackError(err);
         res.send(404);
@@ -30,7 +30,7 @@ router.get('/device/:deviceName', async (req, res) => {
     let snapshot;
 
     try {
-        snapshot = await firebase.database().ref(path).once('value');
+        snapshot = await get(ref(getDatabase(), path));
     } catch (err) {
         trackError(err);
         res.send(404);
@@ -52,7 +52,7 @@ router.get('/sensor/:deviceName/:peripheralName', async (req, res) => {
     let snapshot;
 
     try {
-        snapshot = await firebase.database().ref(path).once('value');
+        snapshot = await get(ref(getDatabase(), path));
     } catch (err) {
         trackError(err);
         res.send(404);
@@ -75,7 +75,7 @@ router.post('/sensor/:deviceName/:peripheralName/value', async (req, res) => {
     let snapshot;
 
     try {
-        snapshot = await firebase.database().ref(path).once('value');
+        snapshot = await get(ref(getDatabase(), path));
     } catch (err) {
         trackError(err);
         res.send(404);
@@ -88,13 +88,49 @@ router.post('/sensor/:deviceName/:peripheralName/value', async (req, res) => {
         return;
     }
 
-    if (!snapshotValue.type !== ITEM_TYPE.OUTPUT) {
+    if (!snapshotValue.type !== PERIPHERAL_TYPE.OUTPUT) {
         res.send(404);
         return;
     }
 
     try {
-        await firebase.database().ref(`${path}/value`).set(value);
+        await set(ref(getDatabase(), `${path}/value`), value);
+    } catch (err) {
+        trackError(err);
+        res.send(404);
+        return;
+    }
+
+    res.send(value);
+});
+
+router.post('/tasks/:deviceName', async (req, res) => {
+    const { deviceName, peripheralName } = req.params;
+    const { value } = req.body;
+    const path = `/devices/${deviceName}/${peripheralName}`;
+    let snapshot;
+
+    try {
+        snapshot = await get(ref(getDatabase(), path));
+    } catch (err) {
+        trackError(err);
+        res.send(404);
+        return;
+    }
+
+    const snapshotValue = snapshot.val();
+    if (!snapshotValue) {
+        res.send(404);
+        return;
+    }
+
+    if (!snapshotValue.type !== PERIPHERAL_TYPE.OUTPUT) {
+        res.send(404);
+        return;
+    }
+
+    try {
+        await set(ref(getDatabase(), `${path}/value`), value);
     } catch (err) {
         trackError(err);
         res.send(404);

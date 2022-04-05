@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "prestart:dev": "npm run lint",
-        "start:dev": "nodemon -r esm index.js",
+        "dev": "nodemon -r esm index.js",
         "start": "node -r esm index.js",
         "lint": "esw",
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,8 +15,10 @@
         "@sentry/tracing": "^6.2.1",
         "config": "^3.3.4",
         "esm": "^3.2.25",
+        "expo-server-sdk": "^3.6.0",
         "express": "^4.17.1",
-        "firebase": "^7.15.4",
+        "firebase": "^9.6.0",
+        "timestring": "^6.0.0",
         "upcast": "^4.0.0",
         "ws": "^7.4.0"
     },

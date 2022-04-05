@@ -4,6 +4,7 @@ import config from 'config';
 import initWebSocketServer from './app/websocket';
 import errorReporting from './app/errorReporting';
 import middlewares from './app/middlewares';
+import './app/firebase';
 
 const app = express();
 const { middlewares: errorMiddlewares } = errorReporting(app);
